@@ -1,5 +1,8 @@
+"""
+Creates three different versions of stats from the database.
+"""
+
 from dataclasses import dataclass
-import loader
 # import numpy as np
 
 @dataclass
@@ -35,15 +38,7 @@ def who_won_round(round_result):
         return "away"
     return None
 
-def compute_stats(db):
-    """
-    Recreate the _tulokset tables from scratch from round results in ep_erat.
-    """
-    # Count for unique round results
-    round_results_counter = {}
-
-    # Correctly counted counterparts to 
-    # ep_peli_tulokset, ep_ottelu_tulokset, ep_pelaaja_tulokset, ep_joukkue_tulokset
+def create_zero_stats(db):
     game_stats = {}
     match_stats = {}
     team_stats = {}
@@ -56,6 +51,25 @@ def compute_stats(db):
         player_stats[id] = PlayerStats(v_era=0, h_era=0, v_peli=0, h_peli=0)
     for id in db["ep_joukkue"].keys():
         team_stats[id] = TeamStats(v_era=0, h_era=0, v_peli=0, h_peli=0, voitto=0, tappio=0)
+    return { 
+        "game_stats": game_stats,      
+        "match_stats": match_stats,
+        "player_stats": player_stats, 
+        "team_stats": team_stats
+    }
+
+def compute_stats(db):
+    """
+    Recreate the _tulokset tables from scratch from round results in ep_erat.
+    """
+    # Count for unique round results
+    round_results_counter = {}
+
+    stats = create_zero_stats(db)
+    game_stats = stats["game_stats"]
+    match_stats = stats["match_stats"]
+    player_stats = stats["player_stats"]
+    team_stats = stats["team_stats"]
 
     # Compute game_stats
     for id, row in db["ep_erat"].items():
@@ -144,32 +158,88 @@ def compute_stats(db):
         team_stats[away_team_id].voitto += 1 if winner == "away" else 0
         team_stats[away_team_id].tappio += 1 if winner == "home" else 0
 
-    stats = { "game_stats": game_stats, "match_stats": match_stats, \
-             "player_stats": player_stats, "match_stats": match_stats }
     return stats
 
 def get_stats_original(db):
     """
     Returns stats object according to original stats fields.
     """
-    # create stats object like above but from original stats
-    pass
+    stats = create_zero_stats(db)
+    game_stats = stats["game_stats"]
+    match_stats = stats["match_stats"]
+    player_stats = stats["player_stats"]
+    team_stats = stats["team_stats"]
+
+    for id, row in db["ep_peli"].items():
+        game_stats[id].ktulos = row.ktulos
+        game_stats[id].vtulos = row.vtulos
+
+    for id, row in db["ep_ottelu"].items():
+        match_stats[id].ktulos = row.ktulos
+        match_stats[id].vtulos = row.vtulos
+
+    for id, row in db["ep_pelaaja"].items():
+        player_stats[id].v_era = row.v_era
+        player_stats[id].h_era = row.h_era
+        player_stats[id].v_peli = row.v_peli
+        player_stats[id].h_peli = row.h_peli
+
+    for id, row in db["ep_sarjat"].items():
+        team_id = row.joukkue
+        if team_id not in db["ep_joukkue"]:
+            continue    # problem with database integrity
+        team_stats[team_id].v_era = row.v_era
+        team_stats[team_id].h_era = row.h_era
+        team_stats[team_id].v_peli = row.v_peli
+        team_stats[team_id].h_peli = row.h_peli
+        team_stats[team_id].voitto = row.voitto
+        team_stats[team_id].tappio = row.tappio
+    return stats
 
 def get_stats_tulokset(db):
     """
     Returns stats object according to _tulokset tables.
     """
-    # create stats object like above but from _tulokset tables
-    pass
+    stats = create_zero_stats(db)
+    game_stats = stats["game_stats"]
+    match_stats = stats["match_stats"]
+    player_stats = stats["player_stats"]
+    team_stats = stats["team_stats"]
 
-def compare_stats(db):
-    """
-    Compare the three versions of stats: compute_stats, _tulokset tables, and old results.
-    """
-    stats = compute_stats(db)
-    stats_tulokset = get_stats_tulokset(db)
-    stats_original = get_stats_original(db)
+    for id, row in db["ep_peli_tulokset"].items():
+        game_id = row.peli
+        if game_id not in db["ep_peli"]:
+            continue    # problem with database integrity
+        game_stats[game_id].ktulos = row.ktulos
+        game_stats[game_id].vtulos = row.vtulos
+
+    for id, row in db["ep_ottelu_tulokset"].items():
+        match_id = row.ottelu
+        if match_id not in db["ep_ottelu"]:
+            continue    # problem with database integrity
+        match_stats[match_id].ktulos = row.ktulos
+        match_stats[match_id].vtulos = row.vtulos
+
+    for id, row in db["ep_pelaaja_tulokset"].items():
+        player_id = row.pelaaja
+        if player_id not in db["ep_pelaaja"]:
+            continue    # problem with database integrity
+        player_stats[player_id].v_era = row.v_era
+        player_stats[player_id].h_era = row.h_era
+        player_stats[player_id].v_peli = row.v_peli
+        player_stats[player_id].h_peli = row.h_peli
+
+    for id, row in db["ep_joukkue_tulokset"].items():
+        team_id = row.joukkue
+        if team_id not in db["ep_joukkue"]:
+            continue    # problem with database integrity
+        team_stats[team_id].v_era = row.v_era
+        team_stats[team_id].h_era = row.h_era
+        team_stats[team_id].v_peli = row.v_peli
+        team_stats[team_id].h_peli = row.h_peli
+        team_stats[team_id].voitto = row.voitto
+        team_stats[team_id].tappio = row.tappio
+    return stats
 
 if __name__ == '__main__':
-    db = loader.load_db()
-    compare_stats(db)
+    pass
