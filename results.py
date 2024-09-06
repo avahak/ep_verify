@@ -111,7 +111,7 @@ def compute_stats(db):
         if row.ktulos >= 3 and row.vtulos < row.ktulos:
             winner = "home"
         elif row.vtulos >= 3 and row.ktulos < row.vtulos:
-            winner = "home"
+            winner = "away"
 
         match_stats[match_id].ktulos += 1 if winner == "home" else 0
         match_stats[match_id].vtulos += 1 if winner == "away" else 0
@@ -126,11 +126,50 @@ def compute_stats(db):
         player_stats[away_player_id].v_peli += 1 if winner == "away" else 0
         player_stats[away_player_id].h_peli += 1 if winner == "home" else 0
 
-    stats = { "game_stats": game_stats, "match_stats": match_stats, "player_stats": player_stats, "match_stats": match_stats }
+    # teams: voitto, tappio
+    for id, row in match_stats.items():
+        winner = None
+        if row.ktulos > row.vtulos:
+            winner = "home"
+        elif row.vtulos > row.ktulos:
+            winner = "away"
+
+        home_team_id = db["ep_ottelu"][id].koti
+        away_team_id = db["ep_ottelu"][id].vieras
+        if (home_team_id not in db["ep_joukkue"]) or (away_team_id not in db["ep_joukkue"]):
+            continue    # problem with database integrity
+
+        team_stats[home_team_id].voitto += 1 if winner == "home" else 0
+        team_stats[home_team_id].tappio += 1 if winner == "away" else 0
+        team_stats[away_team_id].voitto += 1 if winner == "away" else 0
+        team_stats[away_team_id].tappio += 1 if winner == "home" else 0
+
+    stats = { "game_stats": game_stats, "match_stats": match_stats, \
+             "player_stats": player_stats, "match_stats": match_stats }
     return stats
 
+def get_stats_original(db):
+    """
+    Returns stats object according to original stats fields.
+    """
+    # create stats object like above but from original stats
+    pass
+
+def get_stats_tulokset(db):
+    """
+    Returns stats object according to _tulokset tables.
+    """
+    # create stats object like above but from _tulokset tables
+    pass
+
+def compare_stats(db):
+    """
+    Compare the three versions of stats: compute_stats, _tulokset tables, and old results.
+    """
+    stats = compute_stats(db)
+    stats_tulokset = get_stats_tulokset(db)
+    stats_original = get_stats_original(db)
 
 if __name__ == '__main__':
     db = loader.load_db()
-    stats = compute_stats(db)
-    print(stats)
+    compare_stats(db)
