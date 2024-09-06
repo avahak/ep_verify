@@ -1,12 +1,13 @@
-# TODO...
+"""
+Loads all the exported database dumps into a single object containing the parsed data.
+"""
 import re
-# import numpy as np
 from typing import Type
 import classes
 import random
 
 SQL_BACKUP_DIRECTORY = R'C:/Users/mavak/Desktop/ep_sql_backup_05_09_2024/'
-TABLE_NAMES = ["ep_rafla", "ep_kausi", "ep_lohko", "ep_jasen", "ep_pelaaja", 
+TABLE_NAMES = ["ep_rafla", "ep_kausi", "ep_lohko", "ep_jasen", "ep_pelaaja", "ep_joukkue",
                "ep_ottelu", "ep_sarjat", "ep_peli", "ep_erat", "ep_peli_tulokset",
                "ep_ottelu_tulokset", "ep_pelaaja_tulokset", "ep_joukkue_tulokset"]
 
@@ -18,9 +19,9 @@ def strip_str(s: str) -> str:
         return s[1:-1]
     return s
 
-def load_sql_values(file_path: str, target_class: Type) -> str:
+def load_table(file_path: str, target_class: Type) -> str:
     # Load file into string:
-    with open(SQL_BACKUP_DIRECTORY + file_path, 'r') as file:
+    with open(SQL_BACKUP_DIRECTORY + file_path, 'r', encoding='utf-8') as file:
         text = file.read()
 
     # Extract the data as a substring within the INSERT query:
@@ -32,31 +33,35 @@ def load_sql_values(file_path: str, target_class: Type) -> str:
     # TODO Should fix: what if a string value inside has ( or ) character?
     pattern = r'\((.*?)\)'
     rows = re.findall(pattern, text)
+    # rows = [row.replace("\\'", '"') for row in rows]  # not needed - regex handles
 
-    # Split each row into data values:
-    data = []
+    # Split each row into data values and enter them into a dict:
+    table = {}
     for row in rows: 
         # Regex pattern to match single-quoted strings and non-quotes
-        pattern = r"'(?:[^']|'')*'|[^,']+"
+        pattern = r"'(?:\\'|[^'])*'|[^,]+"
         matches = re.findall(pattern, row)
         values = [strip_str(match) for match in matches]
-        data.append(target_class(*values))
+        obj = target_class(*values)
+        table[obj.id] = obj
 
-    return data
+    return table
 
 def load_db():
     db = {}
     for table_name in TABLE_NAMES: 
-        db[table_name] = load_sql_values(f'takaisku_ep_{table_name}.sql', getattr(classes, table_name))
+        db[table_name] = load_table(f'takaisku_ep_{table_name}.sql', getattr(classes, table_name))
     return db
 
-def print_db(db):
+def print_db_samples(db, count):
     for key in db:
-        pick = random.sample(db[key], 6)
-        for p in pick:
-            print(p)
+        table = db[key]
+        ids = list(table.keys())
+        pick = random.sample(ids, count)
+        for id in pick:
+            print(f'id {id}: {table[id]}')
         print()
 
 if __name__ == '__main__':
     db = load_db()
-    print_db(db)
+    print_db_samples(db, 10)

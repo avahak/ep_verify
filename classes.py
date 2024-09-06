@@ -4,7 +4,7 @@ from dataclasses import dataclass, fields
 def cast_types(cls: Type) -> Type:
     """
     Decorator that casts the attributes of a dataclass to their annotated types 
-    upon initialization if the annotated type is supported for casting here.
+    upon initialization (some types only).
     """
     original_init = cls.__init__
 
