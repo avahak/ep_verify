@@ -59,10 +59,10 @@ def output_stats(db):
     stats_tulokset = results.get_stats_tulokset(db)
 
     output = [
-        ("games", verify_stats(db, "ep_peli", "game_stats", "game stats", stats, stats_original, stats_tulokset)), 
-        ("matches", verify_stats(db, "ep_ottelu", "match_stats", "match stats", stats, stats_original, stats_tulokset)), 
-        ("players", verify_stats(db, "ep_pelaaja", "player_stats", "player stats", stats, stats_original, stats_tulokset)), 
-        ("teams", verify_stats(db, "ep_joukkue", "team_stats", "team stats", stats, stats_original, stats_tulokset)), 
+        ("ep_peli", verify_stats(db, "ep_peli", "game_stats", "game stats", stats, stats_original, stats_tulokset)), 
+        ("ep_ottelu", verify_stats(db, "ep_ottelu", "match_stats", "match stats", stats, stats_original, stats_tulokset)), 
+        ("ep_pelaaja", verify_stats(db, "ep_pelaaja", "player_stats", "player stats", stats, stats_original, stats_tulokset)), 
+        ("ep_joukkue", verify_stats(db, "ep_joukkue", "team_stats", "team stats", stats, stats_original, stats_tulokset)), 
         ("ep_pelaaja_redundant", verify_redundant_fields_in_ep_pelaaja(db))
     ]
 
