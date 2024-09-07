@@ -67,7 +67,6 @@ def load_db():
     for file_name in file_names:
         # Files should have the form "dbname_tablename.sql"
         if not file_name.startswith(config.DATABASE_NAME) or not file_name.endswith(".sql"):
-            print("skipping file", file_name)
             continue
         table_name = file_name[len(config.DATABASE_NAME)+1:-4]
         db[table_name] = load_table(file_name, getattr(classes, table_name))
