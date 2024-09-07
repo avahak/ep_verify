@@ -1,7 +1,4 @@
 __pycache__
-/*.env
 *.env
-/*.log
 *.log
-/*.sql
 *.sql
