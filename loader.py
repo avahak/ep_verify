@@ -3,11 +3,11 @@ Loads all the exported database dumps into a single object containing the parsed
 """
 import re
 from typing import List, Type
-import classes
 import random
 import os
 
 import config
+import classes
 
 def get_files_in_directory(directory: str) -> List[str]:
     try:
@@ -34,8 +34,10 @@ def load_table(file_path: str, target_class: Type) -> str:
     with open(f'{config.SQL_BACKUP_DIRECTORY}/{file_path}', 'r', encoding='utf-8') as file:
         all_text = file.read()
 
+    start_indexes = [iter.start() for iter in re.finditer("` VALUES ", all_text)]
+
     # Go through insert queries in the file
-    for start_index in [iter.start() for iter in re.finditer("` VALUES ", all_text)]:
+    for start_index in start_indexes:
         # Extract the data as a substring within the INSERT query
         # TODO Should fix: sloppy, could be within a string!
         end_index = all_text[start_index:].index(");")
@@ -47,9 +49,8 @@ def load_table(file_path: str, target_class: Type) -> str:
         # TODO Should fix: what if a string value inside has ( or ) character?
         pattern = r'\((.*?)\)'
         rows = re.findall(pattern, text)
-        # rows = [row.replace("\\'", '"') for row in rows]  # not needed - regex handles
 
-        # Split each row into data values and enter them into a dict:
+        # Split each row into data values and enter them into the given dataclass:
         for row in rows: 
             # Regex pattern to match single-quoted strings and non-quotes
             pattern = r"'(?:\\'|[^'])*'|[^,]+"

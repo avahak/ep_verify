@@ -1,5 +1,5 @@
 """
-Compare the three different versions of stats.
+Compare the three versions of stats: computed stats, original results, and _tulokset tables.
 """
 
 import loader
@@ -51,9 +51,6 @@ def verify_redundant_fields_in_ep_pelaaja(db):
             
 
 def output_stats(db):
-    """
-    Compare the three versions of stats: compute_stats, _tulokset tables, and old results.
-    """
     stats = results.compute_stats(db)
     stats_original = results.get_stats_original(db)
     stats_tulokset = results.get_stats_tulokset(db)
