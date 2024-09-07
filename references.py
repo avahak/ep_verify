@@ -12,7 +12,7 @@ def verify_reference_integrity(db, table_name, key_name, referenced_table):
     for id, row in db[table_name].items():
         reference_id = getattr(row, key_name)
         if reference_id not in db[referenced_table]:
-            findings = findings + f'{table_name}: {id=}: {key_name}={reference_id} not found in {referenced_table}\n'
+            findings = findings + f'{table_name}({id=}): {key_name}={reference_id} not found in {referenced_table}\n'
             needs_output = True
     return findings + "\n\n" if needs_output else ""
 
