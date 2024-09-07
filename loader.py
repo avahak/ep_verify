@@ -2,14 +2,19 @@
 Loads all the exported database dumps into a single object containing the parsed data.
 """
 import re
-from typing import Type
+from typing import List, Type
 import classes
 import random
+import os
 
-SQL_BACKUP_DIRECTORY = R'C:/Users/mavak/Desktop/ep_sql_backup_07-09-2024/'
-TABLE_NAMES = ["ep_rafla", "ep_kausi", "ep_lohko", "ep_jasen", "ep_pelaaja", "ep_joukkue",
-               "ep_ottelu", "ep_sarjat", "ep_peli", "ep_erat", "ep_peli_tulokset",
-               "ep_ottelu_tulokset", "ep_pelaaja_tulokset", "ep_joukkue_tulokset"]
+import config
+
+def get_files_in_directory(directory: str) -> List[str]:
+    try:
+        return [s for s in os.listdir(directory) if os.path.isfile(os.path.join(directory, s))]
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return []
 
 def strip_str(s: str) -> str: 
     s = s.strip()
@@ -21,18 +26,19 @@ def strip_str(s: str) -> str:
 
 def load_table(file_path: str, target_class: Type) -> str:
     """
-    Super scuffed, use with caution.
+    Super scuffed, use with caution!
     """
     table = {}
 
     # Load file into string:
-    with open(SQL_BACKUP_DIRECTORY + file_path, 'r', encoding='utf-8') as file:
+    with open(f'{config.SQL_BACKUP_DIRECTORY}/{file_path}', 'r', encoding='utf-8') as file:
         all_text = file.read()
 
     # Go through insert queries in the file
     for start_index in [iter.start() for iter in re.finditer("` VALUES ", all_text)]:
         # Extract the data as a substring within the INSERT query
-        end_index = all_text[start_index:].index(");")  # sloppy, could be within a string!
+        # TODO Should fix: sloppy, could be within a string!
+        end_index = all_text[start_index:].index(");")
 
         text = all_text[start_index+9 : start_index+end_index+1]
         # print(f'{file_path}: [{start_index+9}, {start_index+end_index+1}]')
@@ -56,11 +62,18 @@ def load_table(file_path: str, target_class: Type) -> str:
 
 def load_db():
     db = {}
-    for table_name in TABLE_NAMES: 
-        db[table_name] = load_table(f'takaisku_ep_{table_name}.sql', getattr(classes, table_name))
+    file_names = get_files_in_directory(config.SQL_BACKUP_DIRECTORY)
+
+    for file_name in file_names:
+        # Files should have the form "dbname_tablename.sql"
+        if not file_name.startswith(config.DATABASE_NAME) or not file_name.endswith(".sql"):
+            print("skipping file", file_name)
+            continue
+        table_name = file_name[len(config.DATABASE_NAME)+1:-4]
+        db[table_name] = load_table(file_name, getattr(classes, table_name))
     return db
 
-def print_db_samples(db, count):
+def print_db_samples(db, count: int):
     for key in db:
         table = db[key]
         ids = list(table.keys())
@@ -71,7 +84,7 @@ def print_db_samples(db, count):
 
 if __name__ == '__main__':
     db = load_db()
-    # print_db_samples(db, 6)
+    print_db_samples(db, 4)
 
     # print(db["ep_peli"][31203])
     # for id, row in db["ep_erat"].items():
@@ -82,7 +95,7 @@ if __name__ == '__main__':
     # team = db["ep_joukkue"][728]
     # print(team)
 
-    player = db["ep_pelaaja"][5167]
-    print(player)
-    team = db["ep_joukkue"][player.joukkue]
-    print(team)
+    # player = db["ep_pelaaja"][5167]
+    # print(player)
+    # team = db["ep_joukkue"][player.joukkue]
+    # print(team)

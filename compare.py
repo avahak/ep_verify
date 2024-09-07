@@ -4,6 +4,7 @@ Compare the three different versions of stats.
 
 import loader
 import results
+import config
 
 def verify_stats(db, table, category, heading, stats, stats_original, stats_tulokset):
     findings = f'--- {heading} ---\n\n'
@@ -37,7 +38,7 @@ def verify_redundant_fields_in_ep_pelaaja(db):
     return findings
             
 
-def output_stats(db, dir):
+def output_stats(db):
     """
     Compare the three versions of stats: compute_stats, _tulokset tables, and old results.
     """
@@ -54,10 +55,10 @@ def output_stats(db, dir):
     ]
 
     for (type, findings) in output:
-        with open(f'{dir}/{type}_findings.txt', 'w') as f:
+        with open(f'{config.OUTPUT_DIR}/{type}_findings.txt', 'w') as f:
             f.write(findings)
 
 
 if __name__ == '__main__':
     db = loader.load_db()
-    output_stats(db, "output")
+    output_stats(db)

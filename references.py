@@ -4,6 +4,7 @@ NOTE: ideally this would be done in the database schema by adding foreign key co
 to all the references.
 """
 import loader
+import config
 
 def verify_reference_integrity(db, table_name, key_name, referenced_table):
     needs_output = False
@@ -15,7 +16,7 @@ def verify_reference_integrity(db, table_name, key_name, referenced_table):
             needs_output = True
     return findings + "\n\n" if needs_output else ""
 
-def output_result(db, dir):
+def output_result(db):
     findings = ""
     references = [
         ("ep_lohko", "kausi", "ep_kausi"),
@@ -41,9 +42,9 @@ def output_result(db, dir):
     for table_name, key_name, referenced_table in references:
         findings = findings + verify_reference_integrity(db, table_name, key_name, referenced_table)
 
-    with open(f'{dir}/referential_integrity.txt', 'w') as f:
+    with open(f'{config.OUTPUT_DIR}/referential_integrity.txt', 'w') as f:
         f.write(findings)
 
 if __name__ == '__main__':
     db = loader.load_db()
-    output_result(db, "output")
+    output_result(db)
