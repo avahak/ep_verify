@@ -6,7 +6,7 @@ from typing import Type
 import classes
 import random
 
-SQL_BACKUP_DIRECTORY = R'C:/Users/mavak/Desktop/ep_sql_backup_05_09_2024/'
+SQL_BACKUP_DIRECTORY = R'C:/Users/mavak/Desktop/ep_sql_backup_07-09-2024/'
 TABLE_NAMES = ["ep_rafla", "ep_kausi", "ep_lohko", "ep_jasen", "ep_pelaaja", "ep_joukkue",
                "ep_ottelu", "ep_sarjat", "ep_peli", "ep_erat", "ep_peli_tulokset",
                "ep_ottelu_tulokset", "ep_pelaaja_tulokset", "ep_joukkue_tulokset"]
@@ -81,7 +81,7 @@ if __name__ == '__main__':
 
     # team = db["ep_joukkue"][728]
     # print(team)
-    
+
     player = db["ep_pelaaja"][5167]
     print(player)
     team = db["ep_joukkue"][player.joukkue]
