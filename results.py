@@ -71,12 +71,15 @@ def compute_stats(db):
     player_stats = stats["player_stats"]
     team_stats = stats["team_stats"]
 
-    # Compute game_stats
+    # process ep_erat
     for id, row in db["ep_erat"].items():
         game_id = row.peli
         if game_id not in db["ep_peli"]:
             continue    # problem with database integrity
+
         match_id = db["ep_peli"][game_id].ottelu
+        if match_id not in db["ep_ottelu"]:
+            continue    # problem with database integrity
 
         home_team_id = db["ep_ottelu"][match_id].koti
         away_team_id = db["ep_ottelu"][match_id].vieras
@@ -90,7 +93,7 @@ def compute_stats(db):
 
         for k in range(5):
             round_result = getattr(row, f'era{k+1}')
-            round_results_counter[round_result] = round_results_counter.get(round_result, 0)+1
+            round_results_counter[round_result] = round_results_counter.get(round_result, 0) + 1
             winner = who_won_round(round_result)
             game_stats[game_id].ktulos += 1 if winner == "home" else 0
             game_stats[game_id].vtulos += 1 if winner == "away" else 0
@@ -105,7 +108,7 @@ def compute_stats(db):
             player_stats[away_player_id].v_era += 1 if winner == "away" else 0
             player_stats[away_player_id].h_era += 1 if winner == "home" else 0
 
-    # Compute match_stats
+    # process ep_peli
     for id, row in game_stats.items():
         match_id = db["ep_peli"][id].ottelu
         if match_id not in db["ep_ottelu"]:

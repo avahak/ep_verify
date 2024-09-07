@@ -20,30 +20,37 @@ def strip_str(s: str) -> str:
     return s
 
 def load_table(file_path: str, target_class: Type) -> str:
+    """
+    Super scuffed, use with caution.
+    """
+    table = {}
+
     # Load file into string:
     with open(SQL_BACKUP_DIRECTORY + file_path, 'r', encoding='utf-8') as file:
-        text = file.read()
+        all_text = file.read()
 
-    # Extract the data as a substring within the INSERT query:
-    start_index = text.index(R"` VALUES ")
-    end_index = text[start_index:].index(";")
-    text = text[start_index+9:start_index+end_index]
+    # Go through insert queries in the file
+    for start_index in [iter.start() for iter in re.finditer("` VALUES ", all_text)]:
+        # Extract the data as a substring within the INSERT query
+        end_index = all_text[start_index:].index(");")  # sloppy, could be within a string!
 
-    # Split the data into rows:
-    # TODO Should fix: what if a string value inside has ( or ) character?
-    pattern = r'\((.*?)\)'
-    rows = re.findall(pattern, text)
-    # rows = [row.replace("\\'", '"') for row in rows]  # not needed - regex handles
+        text = all_text[start_index+9 : start_index+end_index+1]
+        # print(f'{file_path}: [{start_index+9}, {start_index+end_index+1}]')
 
-    # Split each row into data values and enter them into a dict:
-    table = {}
-    for row in rows: 
-        # Regex pattern to match single-quoted strings and non-quotes
-        pattern = r"'(?:\\'|[^'])*'|[^,]+"
-        matches = re.findall(pattern, row)
-        values = [strip_str(match) for match in matches]
-        obj = target_class(*values)
-        table[obj.id] = obj
+        # Split the data into rows:
+        # TODO Should fix: what if a string value inside has ( or ) character?
+        pattern = r'\((.*?)\)'
+        rows = re.findall(pattern, text)
+        # rows = [row.replace("\\'", '"') for row in rows]  # not needed - regex handles
+
+        # Split each row into data values and enter them into a dict:
+        for row in rows: 
+            # Regex pattern to match single-quoted strings and non-quotes
+            pattern = r"'(?:\\'|[^'])*'|[^,]+"
+            matches = re.findall(pattern, row)
+            values = [strip_str(match) for match in matches]
+            obj = target_class(*values)
+            table[obj.id] = obj
 
     return table
 
@@ -64,4 +71,18 @@ def print_db_samples(db, count):
 
 if __name__ == '__main__':
     db = load_db()
-    print_db_samples(db, 10)
+    # print_db_samples(db, 6)
+
+    # print(db["ep_peli"][31203])
+    # for id, row in db["ep_erat"].items():
+    #     if row.peli == 31203:
+    #         print(row)
+    # print(db["ep_erat"])
+
+    # team = db["ep_joukkue"][728]
+    # print(team)
+    
+    player = db["ep_pelaaja"][5167]
+    print(player)
+    team = db["ep_joukkue"][player.joukkue]
+    print(team)

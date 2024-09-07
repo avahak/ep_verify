@@ -42,7 +42,7 @@ class ep_kausi:
     id: int
     vuosi: int
     kausi: str
-    laji: str
+    Laji: str
 
 @cast_types
 @dataclass
@@ -87,10 +87,10 @@ class ep_pelaaja:
     pelit: int
     v_era: int
     h_era: int
-    e_erat: int
+    e_era: int
     h_peli: int
-    v_peli: int
     e_peli: int
+    v_peli: int
     sukupuoli: str
 
 @cast_types
