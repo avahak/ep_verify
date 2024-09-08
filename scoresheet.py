@@ -14,7 +14,7 @@ TODO
 ...
 """
 
-def check_ep_erat_symbols_and_resolution():
+def check_ep_erat_symbols_and_resolution(db):
     """
     Check that only symbols "V0", "K1-K6", "V1-V6" are used in ep_erat.era[1-5].
     Also checks that there are no non-wins before game resolution and no wins after it.
@@ -49,7 +49,7 @@ def check_ep_erat_symbols_and_resolution():
             
     return findings + "\n\n"
 
-def check(db):
+def output_result(db):
     # Track which ep_erat rows are associated with a given match
     match_id_to_round_ids = {}
     for id, row in db["ep_ottelu"].items():
@@ -66,7 +66,7 @@ def check(db):
     # print([len(l) for l in match_id_to_round_ids.values()])
     
     findings = ""
-    findings += check_ep_erat_symbols_and_resolution()
+    findings += check_ep_erat_symbols_and_resolution(db)
 
     with open(f'{config.OUTPUT_DIR}/scoresheet.txt', 'w') as f:
         f.write(findings)
@@ -74,7 +74,7 @@ def check(db):
 
 if __name__ == '__main__':
     db = loader.load_db()
-    check(db)
+    output_result(db)
     print(db["ep_erat"][30447])
     print(db["ep_peli"][30447])
     print(db["ep_ottelu"][6498])
