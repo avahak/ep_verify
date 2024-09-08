@@ -32,6 +32,9 @@ class TeamStats:
     tappio: int
 
 def who_won_round(round_result):
+    """
+    Returns "home" if home player won, "away" if away player won, otherwise None.
+    """
     if round_result in ['K1', 'K2', 'K3', 'K4', 'K5', 'K6']:
         return "home"
     if round_result in ['V1', 'V2', 'V3', 'V4', 'V5', 'V6']:
@@ -75,21 +78,21 @@ def compute_stats(db):
     for id, row in db["ep_erat"].items():
         game_id = row.peli
         if game_id not in db["ep_peli"]:
-            continue    # problem with database integrity
+            continue
 
         match_id = db["ep_peli"][game_id].ottelu
         if match_id not in db["ep_ottelu"]:
-            continue    # problem with database integrity
+            continue
 
         home_team_id = db["ep_ottelu"][match_id].koti
         away_team_id = db["ep_ottelu"][match_id].vieras
         if (home_team_id not in db["ep_joukkue"]) or (away_team_id not in db["ep_joukkue"]):
-            continue    # problem with database integrity
+            continue
 
         home_player_id = db["ep_peli"][game_id].kp
         away_player_id = db["ep_peli"][game_id].vp
         if (home_player_id not in db["ep_pelaaja"]) or (away_player_id not in db["ep_pelaaja"]):
-            continue    # problem with database integrity
+            continue
 
         for k in range(5):
             round_result = getattr(row, f'era{k+1}')
@@ -112,17 +115,17 @@ def compute_stats(db):
     for id, row in game_stats.items():
         match_id = db["ep_peli"][id].ottelu
         if match_id not in db["ep_ottelu"]:
-            continue    # problem with database integrity 
+            continue 
 
         home_team_id = db["ep_ottelu"][match_id].koti
         away_team_id = db["ep_ottelu"][match_id].vieras
         if (home_team_id not in db["ep_joukkue"]) or (away_team_id not in db["ep_joukkue"]):
-            continue    # problem with database integrity
+            continue
 
         home_player_id = db["ep_peli"][id].kp
         away_player_id = db["ep_peli"][id].vp
         if (home_player_id not in db["ep_pelaaja"]) or (away_player_id not in db["ep_pelaaja"]):
-            continue    # problem with database integrity
+            continue
 
         winner = None
         if row.ktulos >= 3 and row.vtulos < row.ktulos:
@@ -154,7 +157,7 @@ def compute_stats(db):
         home_team_id = db["ep_ottelu"][id].koti
         away_team_id = db["ep_ottelu"][id].vieras
         if (home_team_id not in db["ep_joukkue"]) or (away_team_id not in db["ep_joukkue"]):
-            continue    # problem with database integrity
+            continue
 
         team_stats[home_team_id].voitto += 1 if winner == "home" else 0
         team_stats[home_team_id].tappio += 1 if winner == "away" else 0
@@ -190,7 +193,7 @@ def get_stats_original(db):
     for id, row in db["ep_sarjat"].items():
         team_id = row.joukkue
         if team_id not in db["ep_joukkue"]:
-            continue    # problem with database integrity
+            continue
         team_stats[team_id].v_era = row.v_era
         team_stats[team_id].h_era = row.h_era
         team_stats[team_id].v_peli = row.v_peli
@@ -212,21 +215,21 @@ def get_stats_tulokset(db):
     for id, row in db["ep_peli_tulokset"].items():
         game_id = row.peli
         if game_id not in db["ep_peli"]:
-            continue    # problem with database integrity
+            continue
         game_stats[game_id].ktulos = row.ktulos
         game_stats[game_id].vtulos = row.vtulos
 
     for id, row in db["ep_ottelu_tulokset"].items():
         match_id = row.ottelu
         if match_id not in db["ep_ottelu"]:
-            continue    # problem with database integrity
+            continue
         match_stats[match_id].ktulos = row.ktulos
         match_stats[match_id].vtulos = row.vtulos
 
     for id, row in db["ep_pelaaja_tulokset"].items():
         player_id = row.pelaaja
         if player_id not in db["ep_pelaaja"]:
-            continue    # problem with database integrity
+            continue
         player_stats[player_id].v_era = row.v_era
         player_stats[player_id].h_era = row.h_era
         player_stats[player_id].v_peli = row.v_peli
@@ -235,7 +238,7 @@ def get_stats_tulokset(db):
     for id, row in db["ep_joukkue_tulokset"].items():
         team_id = row.joukkue
         if team_id not in db["ep_joukkue"]:
-            continue    # problem with database integrity
+            continue
         team_stats[team_id].v_era = row.v_era
         team_stats[team_id].h_era = row.h_era
         team_stats[team_id].v_peli = row.v_peli

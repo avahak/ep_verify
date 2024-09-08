@@ -36,7 +36,7 @@ def verify_redundant_fields_in_ep_pelaaja(db):
     findings = f'--- ep_pelaaja: e_era, e_peli, pelit ---\n\n'
     for id, row in db["ep_pelaaja"].items():
         if row.joukkue not in db["ep_joukkue"]:
-            continue    # problem with database integrity
+            continue 
         lohko = db["ep_joukkue"][row.joukkue].lohko
         expected = { "e_era": row.v_era-row.h_era, "e_peli": row.v_peli-row.h_peli, "pelit": row.v_peli+row.h_peli }
         found = { "e_era": row.e_era, "e_peli": row.e_peli, "pelit": row.pelit }
